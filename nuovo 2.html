@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Table Tennis Predictions - Lithuania</title>
   <style>
+    /* Reset margins and paddings */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    /* Styles for body */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f0f0;
@@ -21,6 +23,7 @@
       color: #333;
     }
 
+    /* Main container */
     .container {
       max-width: 800px;
       width: 100%;
@@ -30,6 +33,7 @@
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }
 
+    /* Header */
     header {
       text-align: center;
       margin-bottom: 20px;
@@ -40,6 +44,7 @@
       font-size: 2.5rem;
     }
 
+    /* Warning */
     .warning {
       background-color: #f44336;
       color: white;
@@ -50,6 +55,7 @@
       font-weight: bold;
     }
 
+    /* Form */
     .form {
       margin-bottom: 20px;
     }
@@ -97,6 +103,7 @@
       text-decoration: underline;
     }
 
+    /* Predictions List */
     .predictions-list {
       margin-top: 20px;
     }
@@ -110,6 +117,7 @@
       font-size: 1rem;
     }
 
+    /* Ping Pong Image */
     .ping-pong-image {
       margin-top: 20px;
       max-width: 100%;
@@ -119,6 +127,7 @@
       margin-right: auto;
     }
 
+    /* Footer */
     footer {
       margin-top: 20px;
       text-align: center;
@@ -136,10 +145,18 @@
       WARNING: Do not communicate with others to avoid legal risks. Using VPN - Location: Unknown.
     </div>
 
+    <div id="register-form" class="form" style="display: none;">
+      <h2>Registration</h2>
+      <input type="text" id="register-username" placeholder="Username">
+      <input type="password" id="register-password" placeholder="Password">
+      <button onclick="register()">Register</button>
+      <p><a href="#" onclick="showLoginForm()">Already have an account? Login here.</a></p>
+    </div>
+
     <div id="login-form" class="form">
-      <h2>Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
+      <h2>Administrator Login</h2>
+      <input type="text" id="admin-username" placeholder="Username" value="admin">
+      <input type="password" id="admin-password" placeholder="Password" value="gico1237">
       <button onclick="login()">Login</button>
       <p><a href="#" onclick="showRegisterForm()">Don't have an account? Register here.</a></p>
     </div>
@@ -166,23 +183,33 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const adminLoggedIn = localStorage.getItem('adminLoggedIn');
+      const giancarloitaLoggedIn = localStorage.getItem('giancarloitaLoggedIn');
+
       if (adminLoggedIn === 'true') {
         showPredictionsForm();
-      } else {
-        showLoginForm();
+      } else if (giancarloitaLoggedIn === 'true') {
+        showPredictionsListOnly();
       }
+
       updateTime();
-      setInterval(updateTime, 1000);
+      setInterval(updateTime, 1000); // Update time every second
+      fetchPredictions(); // Fetch predictions initially
     });
 
     function login() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const username = document.getElementById('admin-username').value;
+      const password = document.getElementById('admin-password').value;
 
       // Check admin credentials
       if (username === 'admin' && password === 'gico1237') {
         localStorage.setItem('adminLoggedIn', 'true');
+        localStorage.removeItem('giancarloitaLoggedIn'); // Remove giancarloita login if admin logs in
         showPredictionsForm();
+      } else if (username === 'giancarloita' && password === 'itagianca16') {
+        localStorage.setItem('giancarloitaLoggedIn', 'true');
+        localStorage.removeItem('adminLoggedIn'); // Remove admin login if giancarloita logs in
+        showPredictionsListOnly();
+        alert('WELCOME TO THE TEAM. DO NOT DISCLOSE THIS INFORMATION TO AVOID PROBLEMS');
       } else {
         alert('Invalid username or password');
       }
@@ -190,18 +217,50 @@
 
     function logout() {
       localStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('giancarloitaLoggedIn');
       showLoginForm();
     }
 
     function showLoginForm() {
       document.getElementById('login-form').style.display = 'block';
       document.getElementById('predictions-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'none';
     }
 
     function showPredictionsForm() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('predictions-form').style.display = 'block';
+      document.getElementById('register-form').style.display = 'none';
       fetchPredictions();
+    }
+
+    function showPredictionsListOnly() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('predictions-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'none';
+      fetchPredictions();
+    }
+
+    function showRegisterForm() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('predictions-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'block';
+    }
+
+    function register() {
+      const username = document.getElementById('register-username').value;
+      const password = document.getElementById('register-password').value;
+
+      // Allow registration only for the specific user
+      if (username === 'giancarloita' && password === 'itagianca16') {
+        alert('WELCOME TO THE TEAM. DO NOT DISCLOSE THIS INFORMATION TO AVOID PROBLEMS');
+        showLoginForm();
+      } else {
+        alert('Registration is restricted to specific users.');
+      }
+
+      document.getElementById('register-username').value = '';
+      document.getElementById('register-password').value = '';
     }
 
     function addPrediction() {
@@ -234,15 +293,9 @@
 
     function updateTime() {
       const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const seconds = now.getSeconds().toString().padStart(2, '0');
-      document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
-    }
+      document.getElementById('current-time').textContent = now.toLocaleTimeString();
 
-    function showRegisterForm() {
-      alert('Registration form should be implemented here');
-      // Implement registration form logic here
+      // Update other time zones if necessary
     }
   </script>
 </body>
